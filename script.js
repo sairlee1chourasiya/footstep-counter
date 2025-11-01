@@ -1,79 +1,87 @@
-const board = document.getElementById("board");
-const historyList = document.getElementById("move-history");
-const game = new Chess();
-let draggedPiece = null;
-let sourceSquare = null;
+const musicContainer = document.querySelector('.player-container');
+const playBtn = document.getElementById('play');
+const prevBtn = document.getElementById('prev');
+const nextBtn = document.getElementById('next');
 
-function getSquareId(row, col) {
-  return String.fromCharCode(97 + col) + (8 - row);
+const audio = document.getElementById('audio');
+const progress = document.getElementById('progress');
+const progressContainer = document.querySelector('.progress-container');
+const title = document.getElementById('title');
+const artist = document.getElementById('artist');
+const cover = document.getElementById('cover');
+
+// Song list
+const songs = [
+  { title: 'Shape of You', artist: 'Ed Sheeran', file: 'music/song1.mp3', cover: 'images/cover1.jpg' },
+  { title: 'Let Me Love You', artist: 'Justin Bieber', file: 'music/song2.mp3', cover: 'images/cover2.jpg' },
+  { title: 'Blinding Lights', artist: 'The Weeknd', file: 'music/song3.mp3', cover: 'images/cover3.jpg' }
+];
+
+let songIndex = 0;
+
+// Load song
+function loadSong(song) {
+  title.innerText = song.title;
+  artist.innerText = song.artist;
+  audio.src = song.file;
+  cover.src = song.cover;
+}
+loadSong(songs[songIndex]);
+
+// Play
+function playSong() {
+  musicContainer.classList.add('play');
+  playBtn.innerHTML = '<i class="fa fa-pause"></i>';
+  audio.play();
 }
 
-function getUnicode(piece) {
-  const symbols = {
-    p: "♟", r: "♜", n: "♞", b: "♝", q: "♛", k: "♚",
-    P: "♙", R: "♖", N: "♘", B: "♗", Q: "♕", K: "♔"
-  };
-  return symbols[piece.color === "w" ? piece.type.toUpperCase() : piece.type] || "";
+// Pause
+function pauseSong() {
+  musicContainer.classList.remove('play');
+  playBtn.innerHTML = '<i class="fa fa-play"></i>';
+  audio.pause();
 }
 
-function renderBoard() {
-  board.innerHTML = "";
-  for (let row = 0; row < 8; row++) {
-    for (let col = 0; col < 8; col++) {
-      const square = document.createElement("div");
-      square.classList.add("square");
-      square.classList.add((row + col) % 2 === 0 ? "light" : "dark");
-      const squareId = getSquareId(row, col);
-      square.setAttribute("id", squareId);
-
-      const piece = game.get(squareId);
-      if (piece) {
-        const pieceEl = document.createElement("span");
-        pieceEl.textContent = getUnicode(piece);
-        pieceEl.setAttribute("draggable", "true");
-        pieceEl.classList.add("piece");
-        square.appendChild(pieceEl);
-      }
-
-      board.appendChild(square);
-    }
-  }
-
-  addDragListeners();
+// Prev song
+function prevSong() {
+  songIndex--;
+  if (songIndex < 0) songIndex = songs.length - 1;
+  loadSong(songs[songIndex]);
+  playSong();
 }
 
-function addDragListeners() {
-  document.querySelectorAll(".piece").forEach(piece => {
-    piece.addEventListener("dragstart", e => {
-      draggedPiece = e.target;
-      sourceSquare = e.target.parentNode.id;
-    });
-  });
-
-  document.querySelectorAll(".square").forEach(square => {
-    square.addEventListener("dragover", e => e.preventDefault());
-
-    square.addEventListener("drop", e => {
-      const targetSquare = square.id;
-      const move = game.move({ from: sourceSquare, to: targetSquare, promotion: "q" });
-
-      if (move) {
-        updateHistory(move.san);
-        renderBoard();
-      } else {
-        alert("Illegal move!");
-      }
-
-      draggedPiece = null;
-      sourceSquare = null;
-    });
-  });
+// Next song
+function nextSong() {
+  songIndex++;
+  if (songIndex > songs.length - 1) songIndex = 0;
+  loadSong(songs[songIndex]);
+  playSong();
 }
 
-function updateHistory(move) {
-  const item = document.createElement("li");
-  item.textContent = `${game.turn() === "w" ? "Black" : "White"}: ${move}`;
-  historyList.appendChild(item);
+// Update progress bar
+function updateProgress(e) {
+  const { duration, currentTime } = e.srcElement;
+  const percent = (currentTime / duration) * 100;
+  progress.style.width = `${percent}%`;
 }
 
-renderBoard();
+// Set progress on click
+function setProgress(e) {
+  const width = this.clientWidth;
+  const clickX = e.offsetX;
+  const duration = audio.duration;
+  audio.currentTime = (clickX / width) * duration;
+}
+
+// Event listeners
+playBtn.addEventListener('click', () => {
+  const isPlaying = musicContainer.classList.contains('play');
+  isPlaying ? pauseSong() : playSong();
+});
+
+prevBtn.addEventListener('click', prevSong);
+nextBtn.addEventListener('click', nextSong);
+
+audio.addEventListener('timeupdate', updateProgress);
+progressContainer.addEventListener('click', setProgress);
+audio.addEventListener('ended', nextSong);

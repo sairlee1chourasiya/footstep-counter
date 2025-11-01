@@ -3,78 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Step Counter</title>
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      text-align: center;
-      background: linear-gradient(135deg, #4facfe, #00f2fe);
-      color: white;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-    h1 { font-size: 2.5em; }
-    #count {
-      font-size: 4em;
-      font-weight: bold;
-      margin: 20px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 1.1em;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      background-color: white;
-      color: #0077ff;
-    }
-  </style>
+  <title>Responsive Music Player</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>🚶 Step Counter</h1>
-  <div id="count">0</div>
-  <button id="startBtn">Start Counting</button>
 
-  <script>
-    let stepCount = 0;
-    let lastZ = 0;
-    let moving = false;
+  <div class="player-container">
+    <div class="music-info">
+      <img id="cover" src="images/cover1.jpg" alt="Album Art">
+      <h2 id="title">Shape of You</h2>
+      <h3 id="artist">Ed Sheeran</h3>
+    </div>
 
-    const countDisplay = document.getElementById('count');
-    const startBtn = document.getElementById('startBtn');
+    <audio id="audio" src="music/song1.mp3"></audio>
 
-    startBtn.addEventListener('click', () => {
-      if (typeof DeviceMotionEvent.requestPermission === 'function') {
-        DeviceMotionEvent.requestPermission()
-          .then(response => {
-            if (response === 'granted') startCounting();
-          })
-          .catch(console.error);
-      } else {
-        startCounting();
-      }
-    });
+    <div class="progress-container">
+      <div class="progress" id="progress"></div>
+    </div>
 
-    function startCounting() {
-      window.addEventListener('devicemotion', (event) => {
-        const z = event.accelerationIncludingGravity.z;
-        const deltaZ = Math.abs(z - lastZ);
+    <div class="controls">
+      <button id="prev"><i class="fa fa-backward"></i></button>
+      <button id="play"><i class="fa fa-play"></i></button>
+      <button id="next"><i class="fa fa-forward"></i></button>
+    </div>
+  </div>
 
-        if (deltaZ > 3) { // adjust sensitivity
-          if (!moving) {
-            stepCount++;
-            countDisplay.textContent = stepCount;
-            moving = true;
-          }
-        } else {
-          moving = false;
-        }
-        lastZ = z;
-      });
-    }
-  </script>
+  <script src="https://kit.fontawesome.com/a81368914c.js" crossorigin="anonymous"></script>
+  <script src="script.js"></script>
 </body>
 </html>
